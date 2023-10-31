@@ -127,7 +127,7 @@ fdkAxios.interceptors.response.use(
     if (response.config.responseHeaders) {
       return [response.data, response.headers];
     }
-    return response.data;
+    return { ...response.data, status: response.status }; // change for bulk brands extension
   },
   function (error) {
     if (error.response) {
