@@ -1,9 +1,10 @@
 const { fdkAxios } = require("../common/AxiosHelper");
-const { FDKTokenIssueError } = require("../common/FDKError");
+const { FDKTokenIssueError, FDKOAuthCodeError } = require("../common/FDKError");
 const { Logger } = require("../common/Logger");
 const BaseOAuthClient = require("../common/BaseOAuthClient");
 const querystring = require("query-string");
 const { sign } = require("@gofynd/fp-signature");
+const { convertStringToBase64 } = require("../common/utils");
 
 class OAuthClient extends BaseOAuthClient {
   constructor(config) {
@@ -30,12 +31,17 @@ class OAuthClient extends BaseOAuthClient {
       path: reqPath,
       body: null,
       headers: {},
-      signQuery: true,
     };
-    signingOptions = sign(signingOptions, "1234567");
+    const signature = sign(signingOptions, {
+      signQuery: true,
+    });
     Logger({ type: "DEBUG", message: "Authorization successful" });
 
-    return `${this.config.domain}${signingOptions.path}`;
+    const urlObj = new URL(reqPath, this.config.domain);
+    urlObj.searchParams.set("x-fp-date", signature["x-fp-date"]);
+    urlObj.searchParams.set("x-fp-signature", signature["x-fp-signature"]);
+
+    return urlObj.href;
   }
 
   async verifyCallback(query) {
@@ -50,9 +56,10 @@ class OAuthClient extends BaseOAuthClient {
         grant_type: "authorization_code",
         code: query.code,
       });
-      res.expires_at =
-        res.expires_at || new Date().getTime() + res.expires_in * 1000;
+
       this.setToken(res);
+      this.token_expires_at =
+        new Date().getTime() + this.token_expires_in * 1000;
     } catch (error) {
       if (error.isAxiosError) {
         throw new FDKTokenIssueError(error.message);
@@ -96,16 +103,83 @@ class OAuthClient extends BaseOAuthClient {
     }
   }
 
-  async getAccesstokenObj({ grant_type, client_id, client_secret, scope }) {
-    Logger({ type: "DEBUG", message: "Processing Access token object..." });
+  async getAccesstokenObj({ grant_type, refresh_token, code }) {
+    Logger({
+      type: "DEBUG",
+      message: "Processing partner access token object...",
+    });
+
     let reqData = {
       grant_type: grant_type,
-      client_id,
-      client_secret,
-      scope,
     };
+
+    if (grant_type === "refresh_token") {
+      reqData = { ...reqData, refresh_token };
+    } else if (grant_type === "authorization_code") {
+      reqData = { ...reqData, code };
+    }
+
+    const token = convertStringToBase64(
+      `${this.config.apiKey}:${this.config.apiSecret}`
+    );
+
     let url = `${this.config.domain}/service/panel/authentication/v1.0/organization/${this.config.organizationId}/oauth/token`;
-    return fdkAxios.post(url, reqData);
+    const rawRequest = {
+      method: "POST",
+      url: url,
+      data: querystring.stringify(reqData),
+      headers: {
+        Authorization: `Basic ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+
+    Logger({ level: "INFO", message: "Done." });
+    return fdkAxios.request(rawRequest);
+  }
+
+  async getOfflineAccessToken(scopes, code) {
+    try {
+      let res = await this.getOfflineAccessTokenObj(scopes, code);
+      this.setToken(res);
+      this.token_expires_at =
+        new Date().getTime() + this.token_expires_in * 1000;
+      return res;
+    } catch (error) {
+      if (error.isAxiosError) {
+        throw new FDKTokenIssueError(error.message);
+      }
+      throw error;
+    }
+  }
+
+  async getOfflineAccessTokenObj(scopes, code) {
+    Logger({ type: "DEBUG", message: "Fetching partner offline token" });
+
+    let url = `${this.config.domain}/service/panel/authentication/v1.0/organization/${this.config.organizationId}/oauth/offline-token`;
+
+    let data = {
+      client_id: this.config.apiKey,
+      client_secret: this.config.apiSecret,
+      grant_type: "authorization_code",
+      scope: scopes,
+      code: code,
+    };
+
+    const token = convertStringToBase64(
+      `${this.config.apiKey}:${this.config.apiSecret}`
+    );
+
+    const rawRequest = {
+      method: "POST",
+      url: url,
+      data: data,
+      headers: {
+        Authorization: `Basic ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+    return fdkAxios.request(rawRequest);
   }
 }
 

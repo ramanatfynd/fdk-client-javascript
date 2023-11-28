@@ -22,6 +22,7 @@ Handles all platform order and shipment api(s)
 * [generatePOSReceiptByOrderId](#generateposreceiptbyorderid)
 * [getAllowedStateTransition](#getallowedstatetransition)
 * [getAnnouncements](#getannouncements)
+* [getApplicationShipments](#getapplicationshipments)
 * [getBagById](#getbagbyid)
 * [getBags](#getbags)
 * [getBulkActionTemplate](#getbulkactiontemplate)
@@ -32,6 +33,7 @@ Handles all platform order and shipment api(s)
 * [getOrders](#getorders)
 * [getPlatformShipmentReasons](#getplatformshipmentreasons)
 * [getRoleBasedActions](#getrolebasedactions)
+* [getShipmentBagReasons](#getshipmentbagreasons)
 * [getShipmentById](#getshipmentbyid)
 * [getShipmentHistory](#getshipmenthistory)
 * [getShipmentReasons](#getshipmentreasons)
@@ -907,6 +909,104 @@ Get Announcements
 [AnnouncementsResponse](#AnnouncementsResponse)
 
 Announcements retrieved successfully
+
+
+
+
+<details>
+<summary><i>&nbsp; Example:</i></summary>
+
+```json
+
+```
+</details>
+
+
+
+
+
+
+
+
+
+---
+
+
+### getApplicationShipments
+
+
+
+
+```javascript
+// Promise
+const promise = platformClient.application("<APPLICATION_ID>").order.getApplicationShipments({  lane : value,
+ searchType : value,
+ searchId : value,
+ fromDate : value,
+ toDate : value,
+ dpIds : value,
+ orderingCompanyId : value,
+ stores : value,
+ salesChannel : value,
+ requestByExt : value,
+ pageNo : value,
+ pageSize : value,
+ customerId : value,
+ isPrioritySort : value,
+ excludeLockedShipments : value });
+
+// Async/Await
+const data = await platformClient.application("<APPLICATION_ID>").order.getApplicationShipments({  lane : value,
+ searchType : value,
+ searchId : value,
+ fromDate : value,
+ toDate : value,
+ dpIds : value,
+ orderingCompanyId : value,
+ stores : value,
+ salesChannel : value,
+ requestByExt : value,
+ pageNo : value,
+ pageSize : value,
+ customerId : value,
+ isPrioritySort : value,
+ excludeLockedShipments : value });
+```
+
+
+
+
+
+| Argument  |  Type  | Required | Description |
+| --------- | -----  | -------- | ----------- |  
+| lane | string | no |  |    
+| searchType | string | no |  |    
+| searchId | string | no |  |    
+| fromDate | string | no |  |    
+| toDate | string | no |  |    
+| dpIds | string | no |  |    
+| orderingCompanyId | string | no |  |    
+| stores | string | no |  |    
+| salesChannel | string | no |  |    
+| requestByExt | string | no |  |    
+| pageNo | number | no |  |    
+| pageSize | number | no |  |    
+| customerId | string | no |  |    
+| isPrioritySort | boolean | no |  |    
+| excludeLockedShipments | boolean | no |  |  
+
+
+
+
+
+*Returned Response:*
+
+
+
+
+[ShipmentInternalPlatformViewResponse](#ShipmentInternalPlatformViewResponse)
+
+We are processing the report!
 
 
 
@@ -2504,6 +2604,107 @@ You will get an array of actions allowed for that particular user based on their
 ---
 
 
+### getShipmentBagReasons
+Get reasons behind full or partial cancellation of a shipment
+
+
+
+```javascript
+// Promise
+const promise = platformClient.application("<APPLICATION_ID>").order.getShipmentBagReasons({  shipmentId : value,
+ lineNumber : value });
+
+// Async/Await
+const data = await platformClient.application("<APPLICATION_ID>").order.getShipmentBagReasons({  shipmentId : value,
+ lineNumber : value });
+```
+
+
+
+
+
+| Argument  |  Type  | Required | Description |
+| --------- | -----  | -------- | ----------- | 
+| shipmentId | string | yes | ID of the bag. An order may contain multiple items and may get divided into one or more shipment, each having its own ID. |   
+| lineNumber | number | yes | line number of bag. |  
+
+
+
+Use this API to retrieve the issues that led to the cancellation of bags within a shipment.
+
+*Returned Response:*
+
+
+
+
+[ShipmentBagReasons](#ShipmentBagReasons)
+
+Success. Check the example shown below or refer `ShipmentBagReasons` for more details.
+
+
+
+
+<details>
+<summary><i>&nbsp; Example:</i></summary>
+
+```json
+{
+  "success": true,
+  "reasons": [
+    {
+      "id": 1,
+      "display_name": "Not available",
+      "qc_type": [],
+      "question_set": []
+    },
+    {
+      "reasons": [
+        {
+          "id": 2,
+          "display_name": "Processing other orders",
+          "qc_type": [],
+          "question_set": []
+        },
+        {
+          "id": 3,
+          "display_name": "Printer not working",
+          "qc_type": [],
+          "question_set": []
+        },
+        {
+          "reasons": [
+            {
+              "id": 4,
+              "display_name": "Card issues",
+              "qc_type": [],
+              "question_set": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "display_name": "Card issues",
+      "qc_type": [],
+      "question_set": []
+    }
+  ]
+}
+```
+</details>
+
+
+
+
+
+
+
+
+
+---
+
+
 ### getShipmentById
 
 
@@ -3111,6 +3312,7 @@ const promise = platformClient.order.getShipments({  lane : value,
  pageNo : value,
  pageSize : value,
  fetchActiveShipment : value,
+ allowInactive : value,
  excludeLockedShipments : value,
  paymentMethods : value,
  channelShipmentId : value,
@@ -3141,6 +3343,7 @@ const data = await platformClient.order.getShipments({  lane : value,
  pageNo : value,
  pageSize : value,
  fetchActiveShipment : value,
+ allowInactive : value,
  excludeLockedShipments : value,
  paymentMethods : value,
  channelShipmentId : value,
@@ -3177,6 +3380,7 @@ const data = await platformClient.order.getShipments({  lane : value,
 | pageNo | number | no | Page number for paginated data |    
 | pageSize | number | no | Page size of data received per page |    
 | fetchActiveShipment | boolean | no | flag to fetch active shipments |    
+| allowInactive | boolean | no | Flag to allow inactive shipments |    
 | excludeLockedShipments | boolean | no | flag to fetch locked shipments |    
 | paymentMethods | string | no | Comma separated values of payment methods |    
 | channelShipmentId | string | no | App Shipment Id |    
@@ -5206,9 +5410,12 @@ Verify OTP
  | channel_order_id | string? |  yes  |  |
  | channel_shipment_id | string? |  yes  |  |
  | coupon_code | string? |  yes  |  |
+ | customer_selling_price | number? |  yes  |  |
  | due_date | string? |  yes  |  |
  | employee_discount | number? |  yes  |  |
+ | fulfilment_priority | number? |  yes  |  |
  | is_priority | boolean? |  yes  |  |
+ | is_serial_number_required | boolean? |  yes  |  |
  | loyalty_discount | number? |  yes  |  |
  | marketplace_invoice_id | string? |  yes  |  |
  | order_item_id | string? |  yes  |  |
@@ -5517,6 +5724,29 @@ Verify OTP
  | ---------- | ---- | -------- | ----------- |
  | amount | number? |  yes  |  |
  | mode | string? |  yes  |  |
+ 
+
+---
+
+#### [BagReasonMeta](#BagReasonMeta)
+
+ | Properties | Type | Nullable | Description |
+ | ---------- | ---- | -------- | ----------- |
+ | show_text_area | boolean? |  yes  |  |
+ 
+
+---
+
+#### [BagReasons](#BagReasons)
+
+ | Properties | Type | Nullable | Description |
+ | ---------- | ---- | -------- | ----------- |
+ | display_name | string? |  yes  |  |
+ | id | number? |  yes  |  |
+ | meta | [BagReasonMeta](#BagReasonMeta)? |  yes  |  |
+ | qc_type | [string]? |  yes  |  |
+ | question_set | [[QuestionSet](#QuestionSet)]? |  yes  |  |
+ | reasons | [[BagReasons](#BagReasons)]? |  yes  |  |
  
 
 ---
@@ -6637,6 +6867,7 @@ Verify OTP
  | external_invoice_id | string? |  yes  |  |
  | invoice_url | string? |  yes  |  |
  | label_url | string? |  yes  |  |
+ | links | string? |  yes  |  |
  | store_invoice_id | string? |  yes  |  |
  | updated_date | string? |  yes  |  |
  
@@ -6784,7 +7015,7 @@ Verify OTP
  | is_parent | boolean? |  yes  |  |
  | item | [PlatformItem](#PlatformItem)? |  yes  |  |
  | line_number | number? |  yes  |  |
- | meta | [BagMeta](#BagMeta)? |  yes  |  |
+ | meta | string? |  yes  |  |
  | parent_promo_bags | string? |  yes  |  |
  | payment_methods | [[BagPaymentMethods](#BagPaymentMethods)]? |  yes  |  |
  | prices | [Prices](#Prices)? |  yes  |  |
@@ -6827,7 +7058,7 @@ Verify OTP
  | Properties | Type | Nullable | Description |
  | ---------- | ---- | -------- | ----------- |
  | fynd_order_id | string |  no  |  |
- | meta | [OrderMeta](#OrderMeta)? |  yes  |  |
+ | meta | string? |  yes  |  |
  | order_date | string |  no  |  |
  | payment_methods | string? |  yes  |  |
  | prices | [Prices](#Prices)? |  yes  |  |
@@ -7707,6 +7938,16 @@ Verify OTP
 
 ---
 
+#### [ShipmentBagReasons](#ShipmentBagReasons)
+
+ | Properties | Type | Nullable | Description |
+ | ---------- | ---- | -------- | ----------- |
+ | reasons | [[BagReasons](#BagReasons)]? |  yes  |  |
+ | success | boolean? |  yes  |  |
+ 
+
+---
+
 #### [ShipmentConfig](#ShipmentConfig)
 
  | Properties | Type | Nullable | Description |
@@ -7813,7 +8054,7 @@ Verify OTP
  | fulfilling_store | [ShipmentItemFulFillingStore](#ShipmentItemFulFillingStore)? |  yes  |  |
  | invoice_id | string? |  yes  |  |
  | lock_status | boolean? |  yes  |  |
- | meta | [ShipmentItemMeta](#ShipmentItemMeta)? |  yes  |  |
+ | meta | string? |  yes  |  |
  | mode_of_payment | string? |  yes  |  |
  | order_date | string? |  yes  |  |
  | order_id | string |  no  |  |
@@ -8542,11 +8783,11 @@ Verify OTP
 
  | Properties | Type | Nullable | Description |
  | ---------- | ---- | -------- | ----------- |
- | email | string |  no  |  |
  | first_name | string |  no  |  |
  | gender | string? |  yes  |  |
  | last_name | string? |  yes  |  |
- | mobile | string |  no  |  |
+ | primary_email | string |  no  |  |
+ | primary_mobile_number | string |  no  |  |
  | user_id | string? |  yes  |  |
  | user_type | string? |  yes  |  |
  
